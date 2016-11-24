@@ -20,19 +20,25 @@ export async function render (url, ctx = {}, {
   const mod = await requireModule(join(dir, '.next', 'dist', 'pages', path))
   const Component = mod.default || mod
 
+  const contMod = await requireModule(join(dir, '.next', 'bundles', 'pages', '_layout'))
+  const ContainerComponent = contMod.default || contMod
+
   const [
     props,
     component,
+    containerComponent,
     errorComponent
   ] = await Promise.all([
     Component.getInitialProps ? Component.getInitialProps(ctx) : {},
     read(join(dir, '.next', 'bundles', 'pages', path)),
+    read(join(dir, '.next', 'bundles', 'pages', '_layout')),
     read(join(dir, '.next', 'bundles', 'pages', dev ? '_error-debug' : '_error'))
   ])
 
   const { html, css, ids } = renderStatic(() => {
     const app = createElement(App, {
       Component,
+      ContainerComponent,
       props,
       router: new Router(ctx.req ? ctx.req.url : url)
     })
@@ -49,6 +55,7 @@ export async function render (url, ctx = {}, {
     css,
     data: {
       component,
+      containerComponent,
       errorComponent,
       props,
       ids: ids,

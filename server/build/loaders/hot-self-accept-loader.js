@@ -11,14 +11,21 @@ module.exports = function (content) {
 
       var Component = module.exports.default || module.exports
       Component.__route = ${JSON.stringify(route)}
-
+      const isContainer = ${JSON.stringify(route)} === '/_layout'
       if (module.hot.status() !== 'idle') {
         var components = next.router.components
         for (var r in components) {
           if (!components.hasOwnProperty(r)) continue
 
-          if (components[r].Component.__route === ${JSON.stringify(route)}) {
-            next.router.update(r, Component)
+          const updatedRoute = ${JSON.stringify(route)}
+
+          if (isContainer) {
+            next.router.update(r, { ContainerComponent: Component })
+            continue
+          }
+
+          if (components[r].Component.__route === updatedRoute) {
+            next.router.update(r, { Component })
           }
         }
       }
